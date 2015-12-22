@@ -167,6 +167,10 @@ public class GraphiteReporter extends ScheduledReporter {
     	          graphite.connect();
             }
 
+            if (graphite.isInputShutdown) {
+                throw new IOException("The peer initiated the termination sequence")
+            }
+
             for (Map.Entry<MetricName, Gauge> entry : gauges.entrySet()) {
                 reportGauge(entry.getKey(), entry.getValue(), timestamp);
             }
@@ -196,6 +200,7 @@ public class GraphiteReporter extends ScheduledReporter {
 
     private void closeGraphiteConnection() {
         try {
+            graphite.shutdownOutput()
             graphite.close();
         } catch (IOException e) {
             LOGGER.warn("Unable to report to Graphite", graphite, e);
